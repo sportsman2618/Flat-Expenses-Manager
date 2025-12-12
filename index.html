@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Flat Expense Manager</title>
+
+  <style>
+    :root{
+      --brand:#243763;
+      --brand-strong:#2e4ead;
+      --bg:#e9eef6;
+      --card:#f5f7fc;
+      --accent:#4a6cf7;
+      --danger:#ff6b6b;
+    }
+
+    *{box-sizing:border-box}
+    body {
+      font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background: var(--bg);
+      margin: 0;
+      padding: 0;
+      color: #222;
+    }
+
+    /* NAVBAR */
+    nav.navbar{
+      background: linear-gradient(90deg,var(--brand), var(--brand-strong));
+      color: white;
+      padding: 12px 22px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .brand{
+      display:flex;align-items:center;gap:12px;font-weight:700;font-size:18px;
+    }
+    .brand .logo{
+      width:36px;height:36px;border-radius:8px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;font-weight:800
+    }
+    .nav-links{display:flex;gap:10px}
+    .nav-links a{color:rgba(255,255,255,0.95);text-decoration:none;padding:8px 12px;border-radius:8px}
+    .nav-links a.active{background:rgba(0,0,0,0.12)}
+
+    .container {
+      max-width: 1000px;
+      margin: 28px auto;
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 7px 30px rgba(12,22,50,0.06);
+    }
+
+    h3{margin:0 0 8px 0;color:var(--brand)}
+
+    .card {
+      background: var(--card);
+      padding: 18px;
+      border-radius: 12px;
+      margin-bottom: 16px;
+      border-left: 6px solid var(--brand);
+    }
+
+    input, select, button {
+      padding: 10px;
+      margin: 6px 0;
+      width: 100%;
+      border-radius: 8px;
+      border: 1px solid #d0d7ea;
+      font-size: 14px;
+      background:white;
+    }
+
+    button {
+      background: var(--brand-strong);
+      color: white;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+
+    button:hover{transform:translateY(-1px)}
+
+    table{width:100%;border-collapse:collapse;margin-top:12px}
+    th,td{padding:10px;text-align:left;border-bottom:1px solid #eef2fb;font-size:14px}
+    th{background:var(--brand);color:white}
+
+    .flex{display:flex;gap:10px}
+    .flex .col{flex:1}
+
+    .tab-buttons{display:flex;gap:8px;margin-bottom:12px}
+    .tab-buttons button{flex:1;background:#eceff8;color:#333;padding:10px;border-radius:8px}
+    .tab-buttons button.active{background:var(--brand);color:white}
+
+    .tab{display:none}
+    .tab.active{display:block}
+
+    /* small button group */
+    .small-row{display:flex;gap:8px;align-items:center}
+    .small-row button{padding:8px 10px;width:unset}
+
+    /* Summary restyle */
+    .summary-grid{display:grid;grid-template-columns:1fr 320px;gap:16px}
+    .summary-panel{background:white;padding:12px;border-radius:10px}
+
+    .category-row{display:flex;justify-content:space-between;margin-bottom:10px;align-items:center}
+    .bar-wrap{background:#eef3ff;border-radius:8px;height:12px;width:100%;overflow:hidden;margin-left:12px}
+    .bar{height:12px;border-radius:8px}
+
+    .member-list{max-height:320px;overflow:auto;padding:6px}
+    .member-item{display:flex;justify-content:space-between;padding:8px;border-radius:8px;margin-bottom:8px;background:linear-gradient(180deg,rgba(36,55,99,0.03),transparent)}
+
+    .btn-danger{background:var(--danger);padding:6px 8px;border-radius:6px;font-size:13px}
+    .btn-small{padding:6px 8px;border-radius:6px;font-size:13px;background:#e6eefc;color:#243763;border:none}
+
+    .login-card input{width:100%}
+
+    /* responsive */
+    @media (max-width:800px){
+      .summary-grid{grid-template-columns:1fr}
+      nav.navbar{flex-direction:column;align-items:flex-start}
+      .nav-links{width:100%;justify-content:space-between}
+    }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN PAGE START -->
+<div id="loginPage" class="login-container" style="display:flex;align-items:center;justify-content:center;height:100vh;background:#f0f2f5;">
+  <div class="login-card" style="background:white;padding:30px;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.08);width:320px;text-align:center;">
+    <h2 style="margin-bottom:18px;color:#243763;font-family:Arial, sans-serif;">Flat Expenses Login</h2>
+    <input type="text" id="loginUser" placeholder="Username" style="width:100%;padding:10px;margin-bottom:10px;border:1px solid #ccc;border-radius:6px;" />
+    <input type="password" id="loginPass" placeholder="Password" style="width:100%;padding:10px;margin-bottom:15px;border:1px solid #ccc;border-radius:6px;" />
+    <button onclick="login()" style="width:100%;padding:10px;background:var(--accent);color:white;border:none;border-radius:6px;cursor:pointer;">Login</button>
+    <p class="error" id="loginError" style="color:red;margin-top:10px;font-size:14px;"></p>
+    
+  </div>
+</div>
+<!-- LOGIN PAGE END -->
+
+
+<nav class="navbar">
+  <div class="brand"><div class="logo">FE</div>Flat Expense Manager</div>
+  <div class="nav-links">
+    <a href="#" class="active" onclick="showTab('paymentsTab',document.querySelector('.tab-buttons button'))">Payments</a>
+    <a href="#" onclick="showTab('expensesTab',document.querySelectorAll('.tab-buttons button')[1])">Expenses</a>
+    <a href="#" onclick="showTab('summaryTab',document.querySelectorAll('.tab-buttons button')[2])">Summary</a>
+    <a href="#" id="navLogout" style="background:var(--danger);padding:8px 10px;border-radius:8px;color:white;display:none">Logout</a>
+  </div>
+</nav>
+
+<header style="display:none">Flat Expense Manager</header>
+
+<div id="app" class="container" style="display:none">
+
+  <div class="tab-buttons">
+    <button class="active" onclick="showTab('paymentsTab', this)">💰 Payments</button>
+    <button onclick="showTab('expensesTab', this)">🛒 Expenses</button>
+    <button onclick="showTab('summaryTab', this)">📊 Summary</button>
+  </div>
+
+  <!-- PAYMENTS TAB -->
+  <div class="tab active" id="paymentsTab">
+    <div class="card">
+      <h3>Add Payment Collection</h3>
+
+      <div class="flex">
+        <input class="col" type="date" id="paymentDate" />
+        <select id="paymentMember" class="col">
+        </select>
+      </div>
+
+      <input type="number" id="paymentAmount" placeholder="Enter Amount Collected" />
+      <div class="small-row">
+        <button onclick="addPayment()">Add Payment</button>
+      </div>
+    </div>
+
+    <h3>Payments Record</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Member</th>
+          <th>Amount</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="paymentsTable"></tbody>
+    </table>
+  </div>
+
+  <!-- EXPENSES TAB -->
+  <div class="tab" id="expensesTab">
+    <div class="card">
+      <h3>Add Expense</h3>
+
+      <div class="flex">
+        <input class="col" type="date" id="expenseDate" />
+        <select id="expenseCategory" class="col">
+        </select>
+      </div>
+
+      <input type="number" id="expenseAmount" placeholder="Enter Expense Amount" />
+      <div class="small-row">
+        <button onclick="addExpense()">Add Expense</button>
+      </div>
+    </div>
+
+    <h3>Expense Record</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Category</th>
+          <th>Amount</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="expenseTable"></tbody>
+    </table>
+  </div>
+
+  <!-- SUMMARY TAB -->
+  <div class="tab" id="summaryTab">
+    <div class="card">
+      <h3>Monthly Summary</h3>
+      <div class="summary-grid">
+        <div class="summary-panel" id="summaryMain">
+          <div id="categoryTotals"></div>
+          <hr style="margin:12px 0">
+          <div id="topNote" style="font-size:13px;color:#555"></div>
+        </div>
+
+        <div class="summary-panel">
+          <h4 style="margin-top:0">Members</h4>
+          <div id="memberTotals" class="member-list"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+<script>
+    let USER_ROLE = "admin"; // admin | viewer
+
+let payments = JSON.parse(localStorage.getItem("payments") || "[]");
+let expenses = JSON.parse(localStorage.getItem("expenses") || "[]");
+const MEMBERS = ["Shahmeer","Ali","Ahsan","Saqib","Haroon"];
+const CATEGORIES = ["Gas","Roti","Sabzi","Chicken","Rice","Oil","Others"];
+
+function saveData() {
+  localStorage.setItem("payments", JSON.stringify(payments));
+  localStorage.setItem("expenses", JSON.stringify(expenses));
+}
+
+function showTab(tab, btn) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(tab).classList.add('active');
+
+  // update tab buttons style
+  if(btn){
+    document.querySelectorAll('.tab-buttons button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+
+  // reflect in top navbar links
+  document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+  if(tab === 'paymentsTab') document.querySelectorAll('.nav-links a')[0].classList.add('active');
+  if(tab === 'expensesTab') document.querySelectorAll('.nav-links a')[1].classList.add('active');
+  if(tab === 'summaryTab') document.querySelectorAll('.nav-links a')[2].classList.add('active');
+
+  renderAll();
+}
+
+/* --------- Payments logic (with delete) --------- */
+function addPayment() {
+  const date = document.getElementById("paymentDate").value;
+  const member = document.getElementById("paymentMember").value;
+  const amount = Number(document.getElementById("paymentAmount").value);
+
+  if (!date || !amount) return alert("Fill all fields");
+
+  payments.push({ date, member, amount });
+  saveData();
+  renderAll();
+  // clear inputs
+  document.getElementById("paymentAmount").value = '';
+}
+
+function deletePayment(index){
+  if(!confirm('Delete this payment?')) return;
+  payments.splice(index,1);
+  saveData(); renderAll();
+}
+
+/* --------- Expenses logic (with delete) --------- */
+function deletePayment(index){
+  if (USER_ROLE !== 'admin') return;
+  if(!confirm('Delete this payment?')) return;
+  payments.splice(index,1);
+  saveData(); renderAll();
+}
+
+function deleteExpense(index){
+  if (USER_ROLE !== 'admin') return;
+  if(!confirm('Delete this expense?')) return;
+  expenses.splice(index,1);
+  saveData(); renderAll();
+}
+
+
+/* --------- Renderers --------- */
+function renderPayments() {
+  const table = document.getElementById("paymentsTable");
+  table.innerHTML = "";
+
+  payments.forEach((p, i) => {
+    table.innerHTML += `
+      <tr>
+        <td>${p.date}</td>
+        <td>${p.member}</td>
+        <td>${p.amount}</td>
+        <td><button class=\"btn-small\" onclick=\"deletePayment(${i})\">Delete</button></td>
+      </tr>`;
+  });
+}
+
+function renderExpenses() {
+  const table = document.getElementById("expenseTable");
+  table.innerHTML = "";
+
+  expenses.forEach((e, i) => {
+    table.innerHTML += `
+      <tr>
+        <td>${e.date}</td>
+        <td>${e.category}</td>
+        <td>${e.amount}</td>
+        <td><button class=\"btn-small\" onclick=\"deleteExpense(${i})\">Delete</button></td>
+      </tr>`;
+  });
+}
+
+function renderSummary() {
+  let categorySum = {};
+  CATEGORIES.forEach(c => categorySum[c] = 0);
+
+  let memberPaid = {};
+  MEMBERS.forEach(m => memberPaid[m] = 0);
+
+  expenses.forEach(e => categorySum[e.category] += e.amount);
+  payments.forEach(p => memberPaid[p.member] += p.amount);
+
+  let totalExpenses = expenses.reduce((s, e) => s + e.amount, 0);
+  let share = totalExpenses / MEMBERS.length || 0;
+
+  // Category totals with bars
+  let catHtml = `<h4 style=\"margin-top:0\">Total Expenses: ${totalExpenses}</h4>`;
+  CATEGORIES.forEach(c => {
+    let val = categorySum[c] || 0;
+    let pct = totalExpenses? Math.round((val/totalExpenses)*100) : 0;
+    catHtml += `<div class=\"category-row\"><div style=\"min-width:90px\">${c} <b style=\"margin-left:8px\">${val}</b></div><div style=\"flex:1;display:flex;align-items:center;\"><div class=\"bar-wrap\"><div class=\"bar\" style=\"width:${pct}%;background:linear-gradient(90deg,var(--brand),var(--accent))\"></div></div><div style=\"min-width:42px;text-align:right;font-size:12px;margin-left:8px\">${pct}%</div></div></div>`;
+  });
+  document.getElementById("categoryTotals").innerHTML = catHtml;
+
+  // Member totals
+  let memHtml = "";
+  MEMBERS.forEach(m => {
+    let paid = memberPaid[m] || 0;
+    let remain = (share - paid);
+    let status = remain <= 0 ? 'Settled' : `Owes ${remain.toFixed(2)}`;
+    memHtml += `<div class=\"member-item\"><div><b>${m}</b><div style=\"font-size:12px;color:#666\">Paid: ${paid.toFixed(2)}</div></div><div style=\"text-align:right\"><div style=\"font-weight:700;color:${remain<=0? 'green':'#333'}\">${status}</div></div></div>`;
+  });
+  document.getElementById("memberTotals").innerHTML = memHtml;
+
+  // Top note
+  document.getElementById('topNote').textContent = `Each member share: ${share.toFixed(2)} (Total members: ${MEMBERS.length})`;
+}
+
+function renderAll() {
+  renderPayments();
+  renderExpenses();
+  renderSummary();
+}
+
+/* ---------- init UI values ---------- */
+function populateSelects(){
+  const pm = document.getElementById('paymentMember');
+  pm.innerHTML = '';
+  MEMBERS.forEach(m => pm.innerHTML += `<option>${m}</option>`);
+
+  const ec = document.getElementById('expenseCategory');
+  ec.innerHTML = '';
+  CATEGORIES.forEach(c => ec.innerHTML += `<option>${c}</option>`);
+}
+
+/* ---------- Login/logout ---------- */
+function login() {
+  const user = document.getElementById('loginUser').value.trim();
+  const pass = document.getElementById('loginPass').value.trim();
+  const err = document.getElementById('loginError');
+  err.textContent = '';
+
+  if ((user === 'admin' && pass === '92981130.') || (user === 'viewer' && pass === '12345')) {
+    USER_ROLE = user === 'admin' ? 'admin' : 'viewer';
+    localStorage.setItem('flat_auth', '1');
+    localStorage.setItem('flat_role', USER_ROLE);
+
+    document.getElementById('loginPage').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    document.getElementById('navLogout').style.display = 'inline-block';
+
+    applyRolePermissions();
+  } else {
+    err.textContent = 'Incorrect username or password';
+  }
+}
+
+function applyRolePermissions() {
+  if (USER_ROLE === 'viewer') {
+    // disable all inputs & buttons that modify data
+    document.querySelectorAll(
+      'input, select, button:not(#navLogout)'
+    ).forEach(el => {
+      el.disabled = true;
+      el.style.opacity = '0.6';
+      el.style.cursor = 'not-allowed';
+    });
+
+    // hide delete buttons
+    document.querySelectorAll('.btn-small').forEach(btn => btn.style.display = 'none');
+  }
+}
+
+
+function logout() {
+  localStorage.removeItem('flat_auth');
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('loginPage').style.display = 'flex';
+  document.getElementById('navLogout').style.display = 'none';
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  const authed = localStorage.getItem('flat_auth');
+  USER_ROLE = localStorage.getItem('flat_role') || 'admin';
+
+  if (authed === '1') {
+    document.getElementById('loginPage').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    document.getElementById('navLogout').style.display = 'inline-block';
+    applyRolePermissions();
+  } else {
+    document.getElementById('loginPage').style.display = 'flex';
+    document.getElementById('app').style.display = 'none';
+  }
+
+  document.getElementById('navLogout').addEventListener('click', logout);
+  populateSelects();
+  renderAll();
+});
+
+</script>
+
+</body>
+</html>
+...
