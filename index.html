@@ -247,6 +247,8 @@
 
 
 <script>
+    let USER_ROLE = "admin"; // admin | viewer
+
 let payments = JSON.parse(localStorage.getItem("payments") || "[]");
 let expenses = JSON.parse(localStorage.getItem("expenses") || "[]");
 const MEMBERS = ["Shahmeer","Ali","Ahsan","Saqib","Haroon"];
@@ -298,24 +300,20 @@ function deletePayment(index){
 }
 
 /* --------- Expenses logic (with delete) --------- */
-function addExpense(){
-  const date = document.getElementById("expenseDate").value;
-  const category = document.getElementById("expenseCategory").value;
-  const amount = Number(document.getElementById("expenseAmount").value);
-
-  if (!date || !amount) return alert("Fill all fields");
-
-  expenses.push({ date, category, amount });
-  saveData();
-  renderAll();
-  document.getElementById("expenseAmount").value = '';
+function deletePayment(index){
+  if (USER_ROLE !== 'admin') return;
+  if(!confirm('Delete this payment?')) return;
+  payments.splice(index,1);
+  saveData(); renderAll();
 }
 
 function deleteExpense(index){
+  if (USER_ROLE !== 'admin') return;
   if(!confirm('Delete this expense?')) return;
   expenses.splice(index,1);
   saveData(); renderAll();
 }
+
 
 /* --------- Renderers --------- */
 function renderPayments() {
@@ -408,18 +406,37 @@ function login() {
   const err = document.getElementById('loginError');
   err.textContent = '';
 
-  const validUser = 'admin';
-  const validPass = '12345';
-
-  if (user === validUser && pass === validPass) {
+  if ((user === 'admin' && pass === '12345') || (user === 'viewer' && pass === '12345')) {
+    USER_ROLE = user === 'admin' ? 'admin' : 'viewer';
     localStorage.setItem('flat_auth', '1');
+    localStorage.setItem('flat_role', USER_ROLE);
+
     document.getElementById('loginPage').style.display = 'none';
     document.getElementById('app').style.display = 'block';
     document.getElementById('navLogout').style.display = 'inline-block';
+
+    applyRolePermissions();
   } else {
     err.textContent = 'Incorrect username or password';
   }
 }
+
+function applyRolePermissions() {
+  if (USER_ROLE === 'viewer') {
+    // disable all inputs & buttons that modify data
+    document.querySelectorAll(
+      'input, select, button:not(#navLogout)'
+    ).forEach(el => {
+      el.disabled = true;
+      el.style.opacity = '0.6';
+      el.style.cursor = 'not-allowed';
+    });
+
+    // hide delete buttons
+    document.querySelectorAll('.btn-small').forEach(btn => btn.style.display = 'none');
+  }
+}
+
 
 function logout() {
   localStorage.removeItem('flat_auth');
@@ -430,22 +447,25 @@ function logout() {
 
 window.addEventListener('DOMContentLoaded', () => {
   const authed = localStorage.getItem('flat_auth');
+  USER_ROLE = localStorage.getItem('flat_role') || 'admin';
+
   if (authed === '1') {
     document.getElementById('loginPage').style.display = 'none';
     document.getElementById('app').style.display = 'block';
     document.getElementById('navLogout').style.display = 'inline-block';
+    applyRolePermissions();
   } else {
     document.getElementById('loginPage').style.display = 'flex';
     document.getElementById('app').style.display = 'none';
   }
 
-  // hook logout link
   document.getElementById('navLogout').addEventListener('click', logout);
-
   populateSelects();
   renderAll();
 });
+
 </script>
 
 </body>
 </html>
+...
